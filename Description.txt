@@ -1,0 +1,48 @@
+Llama 2 7B Chat Fine-Tuning (Interview Notes)
+
+1) What model did you fine-tune?
+- Base model: NousResearch/Llama-2-7b-chat-hf (Llama 2 7B Chat).
+- Final model: pkumar02/Llama-2-7b-chat-finetune (merged LoRA weights).
+
+2) What dataset did you use?
+- Training dataset: mlabonne/guanaco-llama2-1k (1,000 samples).
+- Original source: timdettmers/openassistant-guanaco.
+- Format: Llama 2 chat template: <s>[INST] user [/INST] assistant </s>.
+
+3) Why QLoRA?
+- Full fine-tuning of 7B is heavy on VRAM.
+- QLoRA combines 4-bit quantization (NF4) with LoRA adapters, enabling fine-tuning on a single GPU (Colab).
+
+4) What technique and parameters did you use?
+- Technique: QLoRA + LoRA adapters.
+- Quantization: 4-bit NF4 via bitsandbytes.
+- LoRA config: r=64, lora_alpha=16, lora_dropout=0.1, bias=none, task_type=CAUSAL_LM.
+
+5) Training setup (key hyperparameters)?
+- Epochs: 1.
+- Optimizer: paged_adamw_32bit.
+- Learning rate: 2e-4.
+- Weight decay: 0.001.
+- Gradient accumulation: 4.
+- Batch size: 1 (per device train batch size).
+- Max grad norm: 0.3.
+- LR scheduler: cosine with warmup ratio 0.03.
+- Sequence length: 512.
+- Packing: True.
+
+6) How was the model saved and published?
+- Saved LoRA adapter after training.
+- Reloaded base model in FP16 and merged LoRA weights.
+- Pushed merged model and tokenizer to Hugging Face Hub.
+
+7) How did you monitor training?
+- TensorBoard logs (results/runs) and trainer log history.
+
+8) Where is the final model and notebook?
+- Model: https://huggingface.co/pkumar02/Llama-2-7b-chat-finetune
+- Colab: https://colab.research.google.com/drive/1poa5lHeaSSdMy-jJKXZp396y64wNdZ0B?usp=sharing
+
+9) What are the key takeaways?
+- QLoRA makes 7B fine-tuning feasible on limited VRAM.
+- Correct chat prompt formatting is critical for Llama 2 chat models.
+- Merging LoRA weights simplifies inference and deployment.
